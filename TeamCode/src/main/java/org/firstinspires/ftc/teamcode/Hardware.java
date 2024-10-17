@@ -78,10 +78,12 @@ public class Hardware {
      */
     public void init()      {
         // Define and Initialize Motors (note: need to use reference to actual OpMode).
+
         leftFrontDrive  = myOpMode.hardwareMap.get(DcMotor.class, "front_left_motor");
         rightFrontDrive = myOpMode.hardwareMap.get(DcMotor.class, "front_right_motor");
         leftBackDrive  = myOpMode.hardwareMap.get(DcMotor.class, "back_left_motor");
         rightBackDrive = myOpMode.hardwareMap.get(DcMotor.class, "back_right_motor");
+
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
@@ -110,10 +112,12 @@ public class Hardware {
      */
     public void driveRobot(double Drive, double Turn, double Strafe) {
         // Combine drive and turn for blended motion.
+
         double leftBack = Drive + Turn + Strafe;
         double rightBack = Drive - Turn - Strafe;
         double leftFront = Drive - Turn + Strafe;
         double rightFront = Drive + Turn - Strafe;
+
 
 
         // Scale the values so neither exceed +/- 1.0
