@@ -62,7 +62,10 @@ public class Hardware {
     private DcMotor leftBackDrive  = null;
     private DcMotor rightBackDrive  = null;
     private DcMotor rightFrontDrive  = null;
-
+    private DcMotor arm   = null;
+    private DcMotor intake  = null;
+    private DcMotor leftSlider  = null;
+    private DcMotor rightSlider  = null;
 
 
     // Define a constructor that allows the OpMode to pass a reference to itself.
@@ -83,8 +86,10 @@ public class Hardware {
         rightFrontDrive = myOpMode.hardwareMap.get(DcMotor.class, "front_right_motor");
         leftBackDrive  = myOpMode.hardwareMap.get(DcMotor.class, "back_left_motor");
         rightBackDrive = myOpMode.hardwareMap.get(DcMotor.class, "back_right_motor");
-
-
+        intake = myOpMode.hardwareMap.get(DcMotor.class, "intake");
+        arm = myOpMode.hardwareMap.get(DcMotor.class, "arm");
+        leftSlider = myOpMode.hardwareMap.get(DcMotor.class, "leftSlider");
+        rightSlider = myOpMode.hardwareMap.get(DcMotor.class, "rightSlider");
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
         // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
@@ -142,7 +147,18 @@ public class Hardware {
         rightFrontDrive.setPower(rightFrontWheel);
         rightBackDrive.setPower(rightBackWheel);
     }
+    public void setArmPower (double power) {
+        arm.setPower(power);
+    }
 
+    public void setIntakePower (double power) {
+        intake.setPower(power);
+    }
+
+    public void setSliderPower (double power) {
+        leftSlider.setPower(power);
+        rightSlider.setPower(power);
+    }
 
 
 }
