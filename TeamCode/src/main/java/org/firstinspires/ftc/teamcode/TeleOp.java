@@ -25,7 +25,7 @@ public class TeleOp extends LinearOpMode {
             // Update drive, turn, and strafe values from gamepad
             double drive = -gamepad1.left_stick_y;
             double strafe = -gamepad1.left_stick_x;
-            double turn = gamepad1.right_stick_x;
+            double turn = gamepad1.right_stick_x*0.75;
             double arm = gamepad2.right_stick_y;
             if (gamepad2.right_bumper){
                 robot.setIntakePower(-1);
@@ -35,6 +35,9 @@ public class TeleOp extends LinearOpMode {
             }
             else {
                 robot.setIntakePower(0);
+            }
+            if(gamepad1.x){
+                turn /= 0.75;
             }
             // Drive the robot using the updated values
             robot.driveRobot(drive, turn, strafe);
