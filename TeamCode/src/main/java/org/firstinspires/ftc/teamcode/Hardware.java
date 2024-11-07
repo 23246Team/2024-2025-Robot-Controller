@@ -31,13 +31,8 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
-
-import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.AngularVelocity;
-import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 /*
  * This file works in conjunction with the External Hardware Class sample called: ConceptExternalHardwareClass.java
  * Please read the explanations in that Sample about how to use this class definition.
@@ -58,29 +53,10 @@ import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
  */
 
 public class Hardware {
-    // Proportional control constants
-    private static final double DRIVE_GAIN = 0.03;
-    private static final double DRIVE_ACCEL = 2.0;
-    private static final double DRIVE_TOLERANCE = 0.5;
-    private static final double DRIVE_DEADBAND = 0.2;
-    private static final double DRIVE_MAX_AUTO = 0.6;
 
-    private static final double STRAFE_GAIN = 0.03;
-    private static final double STRAFE_ACCEL = 1.5;
-    private static final double STRAFE_TOLERANCE = 0.5;
-    private static final double STRAFE_DEADBAND = 0.2;
-    private static final double STRAFE_MAX_AUTO = 0.6;
-
-    private static final double YAW_GAIN = 0.018;
-    private static final double YAW_ACCEL = 3.0;
-    private static final double YAW_TOLERANCE = 1.0;
-    private static final double YAW_DEADBAND = 0.25;
-    private static final double YAW_MAX_AUTO = 0.6;
-
+    private static final double TICKS_PER_INCH = 345;
     // Proportional control instances
-    public ProportionalControl driveController = new ProportionalControl(DRIVE_GAIN, DRIVE_ACCEL, DRIVE_MAX_AUTO, DRIVE_TOLERANCE, DRIVE_DEADBAND, false);
-    public ProportionalControl strafeController = new ProportionalControl(STRAFE_GAIN, STRAFE_ACCEL, STRAFE_MAX_AUTO, STRAFE_TOLERANCE, STRAFE_DEADBAND, false);
-    public ProportionalControl yawController = new ProportionalControl(YAW_GAIN, YAW_ACCEL, YAW_MAX_AUTO, YAW_TOLERANCE, YAW_DEADBAND, true);
+
     /* Declare OpMode members. */
     private LinearOpMode myOpMode;   // gain access to methods in the calling OpMode.
 
@@ -119,14 +95,16 @@ public class Hardware {
         leftSlider = myOpMode.hardwareMap.get(DcMotor.class, "leftSlider");
         rightSlider = myOpMode.hardwareMap.get(DcMotor.class, "rightSlider");
         imu = myOpMode.hardwareMap.get(IMU.class, "imu");
-        driveEncoder = myOpMode.hardwareMap.get(DcMotor.class, "front_left_motor");
-        strafeEncoder = myOpMode.hardwareMap.get(DcMotor.class, "front_right_motor");
+        driveEncoder = myOpMode.hardwareMap.get(DcMotor.class, "back_left_motor");
+        strafeEncoder = myOpMode.hardwareMap.get(DcMotor.class, "front_left_motor");
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
         // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
         leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
         leftBackDrive.setDirection(DcMotor.Direction.REVERSE);
-
+        driveEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        strafeEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        
         // If there are encoders connected, switch to RUN_USING_ENCODER mode for greater accuracy
         // leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         // rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -194,11 +172,19 @@ public class Hardware {
         return imu;
     }
 
-    public DcMotor getStrafeEncoder() {
-        return strafeEncoder;
+    public double getStrafeEncoder() {
+        return (strafeEncoder.getCurrentPosition()/TICKS_PER_INCH);
     }
 
-    public DcMotor getDriveEncoder() {
-        return driveEncoder;
+    public double getDriveEncoder() {
+        return (driveEncoder.getCurrentPosition()/TICKS_PER_INCH);
+    }
+    public void AutoDrive(double strafe, double drive, double turn) {
+        while (Math.abs(getDriveEncoder()) < drive && myOpMode.opModeIsActive()) {
+            driveRobot(drive, turn, strafe);
+        }
+        while (Math.abs(getStrafeEncoder()) < strafe && myOpMode.opModeIsActive()) {
+            driveRobot(drive, turn, strafe);
+        }
     }
 }
