@@ -104,6 +104,8 @@ public class Hardware {
         leftBackDrive.setDirection(DcMotor.Direction.REVERSE);
         driveEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         strafeEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        strafeEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        driveEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         
         // If there are encoders connected, switch to RUN_USING_ENCODER mode for greater accuracy
         // leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -179,12 +181,21 @@ public class Hardware {
     public double getDriveEncoder() {
         return (driveEncoder.getCurrentPosition()/TICKS_PER_INCH);
     }
-    public void AutoDrive(double strafe, double drive, double turn) {
-        while (Math.abs(getDriveEncoder()) < drive && myOpMode.opModeIsActive()) {
-            driveRobot(drive, turn, strafe);
+    public void AutoDrive(double drive) {
+        while (getDriveEncoder() < drive && myOpMode.opModeIsActive()) {
+            driveRobot(0.2, 0, 0);
         }
+        driveRobot(0, 0, 0); // Stop the robot after driving
+    }
+
+    public void AutoStrafe(double strafe) {
         while (Math.abs(getStrafeEncoder()) < strafe && myOpMode.opModeIsActive()) {
-            driveRobot(drive, turn, strafe);
+            driveRobot(0, 0, -0.2);
         }
+        driveRobot(0, 0, 0); // Stop the robot after strafing
+    }
+
+    public void AutoTurn(double turn) {
+        // Implement the turn logic here
     }
 }
