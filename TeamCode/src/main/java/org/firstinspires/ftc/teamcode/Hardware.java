@@ -28,11 +28,18 @@
  */
 
 package org.firstinspires.ftc.teamcode;
+import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
+
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.util.Range;
+
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 /*
  * This file works in conjunction with the External Hardware Class sample called: ConceptExternalHardwareClass.java
  * Please read the explanations in that Sample about how to use this class definition.
@@ -72,6 +79,7 @@ public class Hardware {
     private IMU imu;
     private DcMotor driveEncoder;
     private DcMotor strafeEncoder;
+    static final double     P_DRIVE_GAIN           = 0.001;
     // Define a constructor that allows the OpMode to pass a reference to itself.
     public Hardware(LinearOpMode opmode) {
         myOpMode = opmode;
@@ -85,7 +93,9 @@ public class Hardware {
      */
     public void init()      {
         // Define and Initialize Motors (note: need to use reference to actual OpMode).
-
+        RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
+        RevHubOrientationOnRobot.UsbFacingDirection  usbDirection  = RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
+        RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
         leftFrontDrive  = myOpMode.hardwareMap.get(DcMotor.class, "front_left_motor");
         rightFrontDrive = myOpMode.hardwareMap.get(DcMotor.class, "front_right_motor");
         leftBackDrive  = myOpMode.hardwareMap.get(DcMotor.class, "back_left_motor");
@@ -106,16 +116,23 @@ public class Hardware {
         strafeEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         strafeEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         driveEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        
+        imu.initialize(new IMU.Parameters(orientationOnRobot));
         // If there are encoders connected, switch to RUN_USING_ENCODER mode for greater accuracy
         // leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         // rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
+        while (opModeInInit()) {
+            telemetry.addData(">", "Robot Heading = %4.0f", getHeading());
+            telemetry.update();
+        }
 
 
 
         myOpMode.telemetry.addData(">", "Hardware Initialized");
         myOpMode.telemetry.update();
+    }
+
+    private boolean opModeInInit() {
+        return false;
     }
 
     /**
@@ -181,21 +198,42 @@ public class Hardware {
     public double getDriveEncoder() {
         return (driveEncoder.getCurrentPosition()/TICKS_PER_INCH);
     }
-    public void AutoDrive(double drive) {
+    public void AutoDrive(double drive, double heading) {
+
         while (getDriveEncoder() < drive && myOpMode.opModeIsActive()) {
-            driveRobot(0.2, 0, 0);
+            double error = getSteeringCorrection(heading, P_DRIVE_GAIN);
+            driveRobot(0.5, error, 0);
         }
         driveRobot(0, 0, 0); // Stop the robot after driving
     }
 
-    public void AutoStrafe(double strafe) {
+    public void AutoStrafe(double strafe, double heading) {
+
         while (Math.abs(getStrafeEncoder()) < strafe && myOpMode.opModeIsActive()) {
-            driveRobot(0, 0, -0.2);
+            double error = getSteeringCorrection(heading, P_DRIVE_GAIN);
+            driveRobot(0, error, -0.5);
         }
         driveRobot(0, 0, 0); // Stop the robot after strafing
     }
 
     public void AutoTurn(double turn) {
         // Implement the turn logic here
+
+    }
+    public double getHeading() {
+        YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
+        return orientation.getYaw(AngleUnit.DEGREES);
+    }
+    public double getSteeringCorrection(double desiredHeading, double proportionalGain) {
+
+        // Determine the heading current error
+        double headingError = desiredHeading - getHeading();
+
+        // Normalize the error to be within +/- 180 degrees
+        while (headingError > 180)  headingError -= 360;
+        while (headingError <= -180) headingError += 360;
+
+        // Multiply the error by the gain to determine the required steering correction/  Limit the result to +/- 1.0
+        return Range.clip(headingError * proportionalGain, -1, 1);
     }
 }

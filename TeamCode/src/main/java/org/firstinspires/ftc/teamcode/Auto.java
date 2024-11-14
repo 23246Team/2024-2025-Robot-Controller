@@ -12,7 +12,8 @@ public class Auto extends LinearOpMode {
         // Initialize all the hardware, using the hardware class.
         robot.init();
         waitForStart();
-        robot.AutoStrafe(24);
+        robot.AutoDrive(4,0);
+        robot.AutoStrafe(24,0);
 
     }
 }
