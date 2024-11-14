@@ -28,7 +28,7 @@
  */
 
 package org.firstinspires.ftc.teamcode;
-
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -66,7 +66,7 @@ public class Hardware {
     private DcMotor rightBackDrive  = null;
     private DcMotor rightFrontDrive  = null;
     private DcMotor arm   = null;
-    private DcMotor intake  = null;
+    private CRServo intake  = null;
     private DcMotor leftSlider  = null;
     private DcMotor rightSlider  = null;
     private IMU imu;
@@ -90,7 +90,7 @@ public class Hardware {
         rightFrontDrive = myOpMode.hardwareMap.get(DcMotor.class, "front_right_motor");
         leftBackDrive  = myOpMode.hardwareMap.get(DcMotor.class, "back_left_motor");
         rightBackDrive = myOpMode.hardwareMap.get(DcMotor.class, "back_right_motor");
-        intake = myOpMode.hardwareMap.get(DcMotor.class, "intake");
+        intake = myOpMode.hardwareMap.get(CRServo.class, "intake");
         arm = myOpMode.hardwareMap.get(DcMotor.class, "arm");
         leftSlider = myOpMode.hardwareMap.get(DcMotor.class, "leftSlider");
         rightSlider = myOpMode.hardwareMap.get(DcMotor.class, "rightSlider");
