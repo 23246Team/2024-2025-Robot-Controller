@@ -1,4 +1,5 @@
 package org.firstinspires.ftc.teamcode;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -12,8 +13,11 @@ public class Auto extends LinearOpMode {
         // Initialize all the hardware, using the hardware class.
         robot.init();
         waitForStart();
-        robot.AutoStrafe(-1, 0);
-        robot.AutoDrive(28,0);
+        robot.AutoDrive(17, 0);
+        robot.AutoStrafe(30,0);
+        robot.AutoDrive(30,0);
+        telemetry.addData("Heading: ", robot.getHeading());
+        telemetry.update();
 
 
 

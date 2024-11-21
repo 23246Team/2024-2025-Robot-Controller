@@ -84,7 +84,13 @@ public class Hardware {
     public Hardware(LinearOpMode opmode) {
         myOpMode = opmode;
     }
+    static final double INCREMENT = 0.01;
+    static final int CYCLE_MS = 50;
+    static final double MAX_FWD = 1.0;
+    static final double MAX_REV = -1.0;
 
+    private double power = 0;
+    private boolean rampUp = true;
     /**
      * Initialize all the robot's hardware.
      * This method must be called ONCE when the OpMode is initialized.
@@ -202,6 +208,7 @@ public class Hardware {
 
         while (getDriveEncoder() < drive && myOpMode.opModeIsActive()) {
             double error = getSteeringCorrection(heading, P_DRIVE_GAIN);
+
             driveRobot(0.5, error, 0);
         }
         driveRobot(0, 0, 0); // Stop the robot after driving
