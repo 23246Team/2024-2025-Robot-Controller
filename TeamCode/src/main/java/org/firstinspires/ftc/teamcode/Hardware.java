@@ -212,16 +212,11 @@ public class Hardware {
         while (getDriveEncoder() < rampUp && myOpMode.opModeIsActive()) {
             double error = getSteeringCorrection(heading, P_DRIVE_GAIN);
             driveRobot(speed, error, 0);
-            speed = Math.min(1, speed + speedIncrement); // Increase speed up to 0.5
+            speed = Math.min(0.7, speed + speedIncrement); // Increase speed up to 0.7
 
         }
 
-        while (getDriveEncoder() < drive && myOpMode.opModeIsActive()) {
-            double error = getSteeringCorrection(heading, P_DRIVE_GAIN);
-            double remainingDistance = drive - getDriveEncoder();
-            double decelerationSpeed = Math.max(0.1, remainingDistance / (drive*0.5)); // Decrease speed as it approaches the target
-            driveRobot(decelerationSpeed, error, 0);
-        }
+
         driveRobot(0, 0, 0); // Stop the robot after driving
     }
 
