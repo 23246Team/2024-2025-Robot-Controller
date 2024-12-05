@@ -1,4 +1,6 @@
 package org.firstinspires.ftc.teamcode;
+import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
+
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
@@ -12,6 +14,7 @@ public class AutoTest extends LinearOpMode {
         robot.init();
         waitForStart();
         robot.AutoDrive(50, 0);
+
 
     }
 }

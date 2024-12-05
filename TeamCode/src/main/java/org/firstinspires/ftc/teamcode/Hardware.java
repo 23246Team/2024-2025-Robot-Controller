@@ -37,7 +37,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.util.Range;
-
+import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 /*
@@ -79,15 +79,12 @@ public class Hardware {
     private IMU imu;
     private DcMotor driveEncoder;
     private DcMotor strafeEncoder;
-    static final double     P_DRIVE_GAIN           = 0.00001;
+
     // Define a constructor that allows the OpMode to pass a reference to itself.
     public Hardware(LinearOpMode opmode) {
         myOpMode = opmode;
     }
-    static final double INCREMENT = 0.01;
-    static final int CYCLE_MS = 50;
-    static final double MAX_FWD = 1.0;
-    static final double MAX_REV = -1.0;
+
 
 
 
@@ -205,16 +202,28 @@ public class Hardware {
         return (driveEncoder.getCurrentPosition()/TICKS_PER_INCH);
     }
     public void AutoDrive(double drive, double heading) {
-        double rampUp = drive * 0.75;
-        double speed = 0.1; // Initial speed
+        double rampUp = drive * 0.6;
+        double speed = 0.3; // Initial speed
         double speedIncrement = 0.05; // Speed increment
 
         while (getDriveEncoder() < rampUp && myOpMode.opModeIsActive()) {
             double error = getSteeringCorrection(heading, P_DRIVE_GAIN);
-            driveRobot(speed, error, 0);
-            speed = Math.min(0.7, speed + speedIncrement); // Increase speed up to 0.7
+            speed = Math.min(0.5, speed + speedIncrement);
+            driveRobot(speed, -error, 0);
+
+             // Increase speed up to 0.7
 
         }
+
+
+        while (getDriveEncoder() < drive && myOpMode.opModeIsActive()) {
+            double error = getSteeringCorrection(heading, P_DRIVE_GAIN);
+            double remainingDistance = drive - getDriveEncoder();
+            double decelerationSpeed = Range.clip(remainingDistance /drive * 0.2, 0.2, 0.7) ;// Decrease speed as it approaches the target
+            driveRobot(decelerationSpeed, -error, 0);
+        }
+
+
 
 
         driveRobot(0, 0, 0); // Stop the robot after driving
@@ -237,6 +246,7 @@ public class Hardware {
         YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
         return orientation.getYaw(AngleUnit.DEGREES);
     }
+    static final double     P_DRIVE_GAIN           = 0.1;
     public double getSteeringCorrection(double desiredHeading, double proportionalGain) {
 
         // Determine the heading current error
