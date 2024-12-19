@@ -27,6 +27,13 @@ public class TeleOp extends LinearOpMode {
             double strafe = -gamepad1.left_stick_x;
             double turn = gamepad1.right_stick_x*0.75;
             double arm = gamepad2.right_stick_y*.90;
+            if (gamepad2.right_trigger!= 0){
+                robot.setSliderPower(gamepad2.right_trigger);
+            } else if (gamepad2.left_trigger != 0){
+                robot.setSliderPower(-gamepad2.left_trigger);
+            } else {
+                robot.setSliderPower(0);
+            }
             if (gamepad2.right_bumper){
                 robot.setIntakePower(-1);
             }

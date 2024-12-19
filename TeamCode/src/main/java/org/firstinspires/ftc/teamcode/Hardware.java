@@ -61,7 +61,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 
 public class Hardware {
 
-    private static final double TICKS_PER_INCH = 345;
+    private static final double TICKS_PER_INCH = 336.20;
     // Proportional control instances
 
     /* Declare OpMode members. */
@@ -76,7 +76,7 @@ public class Hardware {
     private CRServo intake  = null;
     private DcMotor leftSlider  = null;
     private DcMotor rightSlider  = null;
-    private IMU imu;
+    public IMU imu;
     private DcMotor driveEncoder;
     private DcMotor strafeEncoder;
 
@@ -187,7 +187,7 @@ public class Hardware {
     }
 
     public void setSliderPower (double power) {
-        leftSlider.setPower(power);
+        leftSlider.setPower(-power);
         rightSlider.setPower(power);
     }
     public IMU getImu() {
@@ -244,9 +244,10 @@ public class Hardware {
     }
     public double getHeading() {
         YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
+        myOpMode.telemetry.addData("Heading: ", orientation.getYaw(AngleUnit.DEGREES));
         return orientation.getYaw(AngleUnit.DEGREES);
     }
-    static final double     P_DRIVE_GAIN           = 0.1;
+    static final double     P_DRIVE_GAIN           = 0.09;
     public double getSteeringCorrection(double desiredHeading, double proportionalGain) {
 
         // Determine the heading current error
