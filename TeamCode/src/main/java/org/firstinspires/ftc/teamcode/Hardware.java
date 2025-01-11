@@ -61,7 +61,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 
 public class Hardware {
 
-    private static final double TICKS_PER_INCH = 336.20;
+    private static final double TICKS_PER_INCH = 345;
     // Proportional control instances
 
     /* Declare OpMode members. */
@@ -204,40 +204,43 @@ public class Hardware {
         return (driveEncoder.getCurrentPosition()/TICKS_PER_INCH);
     }
     public void AutoDrive(double drive, double heading) {
-        boolean isReverse = drive < 0;
-        drive = Math.abs(drive); // Take the absolute value of drive
-
-        double rampUp = drive * 0.6;
+        double rampUp = Math.abs(drive) * 0.6;
         double speed = 0.3; // Initial speed
         double speedIncrement = 0.05; // Speed increment
+        double direction = Math.signum(drive); // Determine the direction (1 for forward, -1 for backward)
 
-        while (getDriveEncoder() < rampUp && myOpMode.opModeIsActive()) {
+        while (Math.abs(getDriveEncoder()) < math.abs(rampUp) && myOpMode.opModeIsActive()) {
             double error = getSteeringCorrection(heading, P_DRIVE_GAIN);
             speed = Math.min(0.5, speed + speedIncrement);
-            driveRobot(isReverse ? -speed : speed, -error, 0);
+            driveRobot(speed * direction, error, 0);
         }
 
-        while (getDriveEncoder() < drive && myOpMode.opModeIsActive()) {
+        while (Math.abs(getDriveEncoder()) < Math.abs(drive) && myOpMode.opModeIsActive()) {
             double error = getSteeringCorrection(heading, P_DRIVE_GAIN);
-            double remainingDistance = drive - getDriveEncoder();
-            double decelerationSpeed = Range.clip(remainingDistance / drive * 0.2, 0.2, 0.7); // Decrease speed as it approaches the target
-            driveRobot(isReverse ? -decelerationSpeed : decelerationSpeed, -error, 0);
+            double remainingDistance = Math.abs(drive) - Math.abs(getDriveEncoder());
+            double decelerationSpeed = Range.clip(remainingDistance / Math.abs(drive) * 0.2, 0.2, 0.7); // Decrease speed as it approaches the target
+            driveRobot(decelerationSpeed * direction, error, 0);
         }
 
         driveRobot(0, 0, 0); // Stop the robot after driving
-    }
+}
 
     public void AutoStrafe(double strafe, double heading) {
-        double initialPosition = getStrafeEncoder(); // Get the initial encoder position
-        double targetPosition = initialPosition + strafe; // Calculate the target position by adding the strafe distance to the initial position
-        double rampUp = 10; // Distance to ramp up the speed
-        double speed = 0.1; // Initial speed
-        double speedIncrement = 0.05; // Speed increment for ramp up
+        double rampUp = strafe * 0.6;
+        double speed = 0.3; // Initial speed
+        double speedIncrement = 0.05; // Speed increment
+
+        while (getStrafeEncoder() < rampUp && myOpMode.opModeIsActive()) {
+            double error = getSteeringCorrection(heading, P_DRIVE_GAIN);
+            speed = Math.min(0.5, speed + speedIncrement);
+            driveRobot(0, error, speed);
+        }
+
         while (getStrafeEncoder() < strafe && myOpMode.opModeIsActive()) {
             double error = getSteeringCorrection(heading, P_DRIVE_GAIN);
-            double remainingDistance = drive - getDriveEncoder();
-            double decelerationSpeed = Range.clip(remainingDistance / drive * 0.2, 0.2, 0.7); // Decrease speed as it approaches the target
-            driveRobot(isReverse ? -decelerationSpeed : decelerationSpeed, -error, 0);
+            double remainingDistance = strafe - getStrafeEncoder();
+            double decelerationSpeed = Range.clip(remainingDistance / strafe * 0.2, 0.2, 0.7); // Decrease speed as it approaches the target
+            driveRobot(0, error, decelerationSpeed);
         }
 
         driveRobot(0, 0, 0); // Stop the robot after strafing
