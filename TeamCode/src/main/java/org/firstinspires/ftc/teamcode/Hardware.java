@@ -233,44 +233,11 @@ public class Hardware {
         double rampUp = 10; // Distance to ramp up the speed
         double speed = 0.1; // Initial speed
         double speedIncrement = 0.05; // Speed increment for ramp up
-
-        // Ramp up speed
-        while (Math.abs(getStrafeEncoder() - initialPosition) < rampUp && myOpMode.opModeIsActive()) {
-            double error = getSteeringCorrection(heading, P_DRIVE_GAIN); // Get steering correction based on heading
-            if (speed + speedIncrement < 0.5) {
-                speed += speedIncrement;
-            } else {
-                speed = 0.5;
-            }
-            if (strafe > 0) {
-                driveRobot(0, error, speed); // Drive the robot with the calculated speed and error
-            } else {
-                driveRobot(0, error, -speed); // Drive the robot with the calculated speed and error
-            }
-        }
-
-        // Maintain constant speed
-        while (Math.abs(getStrafeEncoder() - initialPosition) < Math.abs(strafe) - rampUp && myOpMode.opModeIsActive()) {
-            double error = getSteeringCorrection(heading, P_DRIVE_GAIN); // Get steering correction based on heading
-            if (strafe > 0) {
-                driveRobot(0, error, 0.5); // Drive the robot at constant speed
-            } else {
-                driveRobot(0, error, -0.5); // Drive the robot at constant speed
-            }
-        }
-
-        // Decelerate
-        while (Math.abs(getStrafeEncoder() - initialPosition) < Math.abs(strafe) && myOpMode.opModeIsActive()) {
-            double error = getSteeringCorrection(heading, P_DRIVE_GAIN); // Get steering correction based on heading
-            double remainingDistance = Math.abs(strafe) - Math.abs(getStrafeEncoder() - initialPosition); // Calculate remaining distance
-
-            double decelerationSpeed = Range.clip(remainingDistance / rampUp * 0.1, 0.2, 0.7) ;// Decrease speed as it approaches the target
-
-            if (strafe > 0) {
-                driveRobot(0, error, decelerationSpeed); // Drive the robot with deceleration speed
-            } else {
-                driveRobot(0, error, -decelerationSpeed); // Drive the robot with deceleration speed
-            }
+        while (getStrafeEncoder() < strafe && myOpMode.opModeIsActive()) {
+            double error = getSteeringCorrection(heading, P_DRIVE_GAIN);
+            double remainingDistance = drive - getDriveEncoder();
+            double decelerationSpeed = Range.clip(remainingDistance / drive * 0.2, 0.2, 0.7); // Decrease speed as it approaches the target
+            driveRobot(isReverse ? -decelerationSpeed : decelerationSpeed, -error, 0);
         }
 
         driveRobot(0, 0, 0); // Stop the robot after strafing
