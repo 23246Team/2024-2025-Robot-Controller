@@ -209,7 +209,7 @@ public class Hardware {
         double speedIncrement = 0.05; // Speed increment
         double direction = Math.signum(drive); // Determine the direction (1 for forward, -1 for backward)
 
-        while (Math.abs(getDriveEncoder()) < math.abs(rampUp) && myOpMode.opModeIsActive()) {
+        while (Math.abs(getDriveEncoder()) < Math.abs(rampUp) && myOpMode.opModeIsActive()) {
             double error = getSteeringCorrection(heading, P_DRIVE_GAIN);
             speed = Math.min(0.5, speed + speedIncrement);
             driveRobot(speed * direction, error, 0);
@@ -240,7 +240,7 @@ public class Hardware {
         while (Math.abs(getStrafeEncoder()) < Math.abs(strafe) && myOpMode.opModeIsActive()) {
             double error = getSteeringCorrection(heading, P_DRIVE_GAIN);
             double remainingDistance = Math.abs(strafe) - Math.abs(getStrafeEncoder());
-            double decelerationSpeed = Range.clip(remainingDistance / Math.abs(strafe) * 0.2, 0.2, 0.7); // Decrease speed as it approaches the target
+            double decelerationSpeed = Range.clip(remainingDistance / Math.abs(strafe) * 0.2, 0.4, 0.7); // Decrease speed as it approaches the target
             driveRobot(0, error, decelerationSpeed * direction);
         }
 

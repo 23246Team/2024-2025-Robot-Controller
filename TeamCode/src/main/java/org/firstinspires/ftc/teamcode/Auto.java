@@ -15,7 +15,7 @@ public class Auto extends LinearOpMode {
         waitForStart();
         //robot.AutoDrive(-1.5,0);
 
-        robot.AutoStrafe(37,180);
+        robot.AutoStrafe(-37,180);
 
 
 
