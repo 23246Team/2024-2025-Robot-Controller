@@ -226,21 +226,22 @@ public class Hardware {
 }
 
     public void AutoStrafe(double strafe, double heading) {
-        double rampUp = strafe * 0.6;
+        double rampUp = Math.abs(strafe) * 0.6;
         double speed = 0.3; // Initial speed
         double speedIncrement = 0.05; // Speed increment
+        double direction = Math.signum(strafe); // Determine the direction (1 for right, -1 for left)
 
-        while (getStrafeEncoder() < rampUp && myOpMode.opModeIsActive()) {
+        while (Math.abs(getStrafeEncoder()) < Math.abs(rampUp) && myOpMode.opModeIsActive()) {
             double error = getSteeringCorrection(heading, P_DRIVE_GAIN);
             speed = Math.min(0.5, speed + speedIncrement);
-            driveRobot(0, error, speed);
+            driveRobot(0, error, speed * direction);
         }
 
-        while (getStrafeEncoder() < strafe && myOpMode.opModeIsActive()) {
+        while (Math.abs(getStrafeEncoder()) < Math.abs(strafe) && myOpMode.opModeIsActive()) {
             double error = getSteeringCorrection(heading, P_DRIVE_GAIN);
-            double remainingDistance = strafe - getStrafeEncoder();
-            double decelerationSpeed = Range.clip(remainingDistance / strafe * 0.2, 0.2, 0.7); // Decrease speed as it approaches the target
-            driveRobot(0, error, decelerationSpeed);
+            double remainingDistance = Math.abs(strafe) - Math.abs(getStrafeEncoder());
+            double decelerationSpeed = Range.clip(remainingDistance / Math.abs(strafe) * 0.2, 0.2, 0.7); // Decrease speed as it approaches the target
+            driveRobot(0, error, decelerationSpeed * direction);
         }
 
         driveRobot(0, 0, 0); // Stop the robot after strafing
