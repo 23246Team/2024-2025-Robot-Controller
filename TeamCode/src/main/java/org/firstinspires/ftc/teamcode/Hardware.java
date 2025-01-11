@@ -120,9 +120,11 @@ public class Hardware {
         strafeEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         driveEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         imu.initialize(new IMU.Parameters(orientationOnRobot));
+        //imu.resetYaw();
         // If there are encoders connected, switch to RUN_USING_ENCODER mode for greater accuracy
         // leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         // rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
         while (opModeInInit()) {
             telemetry.addData(">", "Robot Heading = %4.0f", getHeading());
             telemetry.update();
@@ -202,6 +204,9 @@ public class Hardware {
         return (driveEncoder.getCurrentPosition()/TICKS_PER_INCH);
     }
     public void AutoDrive(double drive, double heading) {
+        boolean isReverse = drive < 0;
+        drive = Math.abs(drive); // Take the absolute value of drive
+
         double rampUp = drive * 0.6;
         double speed = 0.3; // Initial speed
         double speedIncrement = 0.05; // Speed increment
@@ -209,32 +214,65 @@ public class Hardware {
         while (getDriveEncoder() < rampUp && myOpMode.opModeIsActive()) {
             double error = getSteeringCorrection(heading, P_DRIVE_GAIN);
             speed = Math.min(0.5, speed + speedIncrement);
-            driveRobot(speed, -error, 0);
-
-             // Increase speed up to 0.7
-
+            driveRobot(isReverse ? -speed : speed, -error, 0);
         }
-
 
         while (getDriveEncoder() < drive && myOpMode.opModeIsActive()) {
             double error = getSteeringCorrection(heading, P_DRIVE_GAIN);
             double remainingDistance = drive - getDriveEncoder();
-            double decelerationSpeed = Range.clip(remainingDistance /drive * 0.2, 0.2, 0.7) ;// Decrease speed as it approaches the target
-            driveRobot(decelerationSpeed, -error, 0);
+            double decelerationSpeed = Range.clip(remainingDistance / drive * 0.2, 0.2, 0.7); // Decrease speed as it approaches the target
+            driveRobot(isReverse ? -decelerationSpeed : decelerationSpeed, -error, 0);
         }
-
-
-
 
         driveRobot(0, 0, 0); // Stop the robot after driving
     }
 
     public void AutoStrafe(double strafe, double heading) {
+        double initialPosition = getStrafeEncoder(); // Get the initial encoder position
+        double targetPosition = initialPosition + strafe; // Calculate the target position by adding the strafe distance to the initial position
+        double rampUp = 10; // Distance to ramp up the speed
+        double speed = 0.1; // Initial speed
+        double speedIncrement = 0.05; // Speed increment for ramp up
 
-        while (Math.abs(getStrafeEncoder()) < strafe && myOpMode.opModeIsActive()) {
-            double error = getSteeringCorrection(heading, P_DRIVE_GAIN);
-            driveRobot(0, error, -0.5);
+        // Ramp up speed
+        while (Math.abs(getStrafeEncoder() - initialPosition) < rampUp && myOpMode.opModeIsActive()) {
+            double error = getSteeringCorrection(heading, P_DRIVE_GAIN); // Get steering correction based on heading
+            if (speed + speedIncrement < 0.5) {
+                speed += speedIncrement;
+            } else {
+                speed = 0.5;
+            }
+            if (strafe > 0) {
+                driveRobot(0, error, speed); // Drive the robot with the calculated speed and error
+            } else {
+                driveRobot(0, error, -speed); // Drive the robot with the calculated speed and error
+            }
         }
+
+        // Maintain constant speed
+        while (Math.abs(getStrafeEncoder() - initialPosition) < Math.abs(strafe) - rampUp && myOpMode.opModeIsActive()) {
+            double error = getSteeringCorrection(heading, P_DRIVE_GAIN); // Get steering correction based on heading
+            if (strafe > 0) {
+                driveRobot(0, error, 0.5); // Drive the robot at constant speed
+            } else {
+                driveRobot(0, error, -0.5); // Drive the robot at constant speed
+            }
+        }
+
+        // Decelerate
+        while (Math.abs(getStrafeEncoder() - initialPosition) < Math.abs(strafe) && myOpMode.opModeIsActive()) {
+            double error = getSteeringCorrection(heading, P_DRIVE_GAIN); // Get steering correction based on heading
+            double remainingDistance = Math.abs(strafe) - Math.abs(getStrafeEncoder() - initialPosition); // Calculate remaining distance
+
+            double decelerationSpeed = Range.clip(remainingDistance / rampUp * 0.1, 0.2, 0.7) ;// Decrease speed as it approaches the target
+
+            if (strafe > 0) {
+                driveRobot(0, error, decelerationSpeed); // Drive the robot with deceleration speed
+            } else {
+                driveRobot(0, error, -decelerationSpeed); // Drive the robot with deceleration speed
+            }
+        }
+
         driveRobot(0, 0, 0); // Stop the robot after strafing
     }
 
@@ -247,17 +285,17 @@ public class Hardware {
         myOpMode.telemetry.addData("Heading: ", orientation.getYaw(AngleUnit.DEGREES));
         return orientation.getYaw(AngleUnit.DEGREES);
     }
-    static final double     P_DRIVE_GAIN           = 0.09;
+    static final double     P_DRIVE_GAIN           = 0.0003;     // Larger is more responsive, but also less stable
     public double getSteeringCorrection(double desiredHeading, double proportionalGain) {
 
         // Determine the heading current error
-        double headingError = desiredHeading - getHeading();
+        double headingError = desiredHeading - getHeading(); // Positive error means the robot is too far to the right
 
         // Normalize the error to be within +/- 180 degrees
-        while (headingError > 180)  headingError -= 360;
+        while (headingError > 180)  headingError -= 360; // Make error within +/- 180 degrees
         while (headingError <= -180) headingError += 360;
 
         // Multiply the error by the gain to determine the required steering correction/  Limit the result to +/- 1.0
-        return Range.clip(headingError * proportionalGain, -1, 1);
+        return Range.clip(headingError * proportionalGain, -1, 1); // Return the steering correction
     }
 }

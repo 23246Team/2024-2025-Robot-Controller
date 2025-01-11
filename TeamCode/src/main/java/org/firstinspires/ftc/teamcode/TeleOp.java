@@ -10,6 +10,7 @@ public class TeleOp extends LinearOpMode {
 
     @Override
     public void runOpMode() {
+        double arm = 0;
         // Initialize all the hardware, using the hardware class.
         robot.init();
 
@@ -26,7 +27,16 @@ public class TeleOp extends LinearOpMode {
             double drive = -gamepad1.left_stick_y;
             double strafe = -gamepad1.left_stick_x;
             double turn = gamepad1.right_stick_x*0.75;
-            double arm = gamepad2.right_stick_y*.90;
+
+            if (gamepad2.right_stick_y < 0){
+                arm = gamepad2.right_stick_y*.90;
+            }
+            else if(gamepad2.right_stick_y > 0){
+                arm = gamepad2.right_stick_y*.75;
+            }
+            else{
+                arm = 0;
+            }
             if (gamepad2.right_trigger!= 0){
                 robot.setSliderPower(gamepad2.right_trigger);
             } else if (gamepad2.left_trigger != 0){
@@ -45,6 +55,10 @@ public class TeleOp extends LinearOpMode {
             }
             if(gamepad1.x){
                 turn /= 0.75;
+
+            }
+            if(gamepad1.y){
+                drive *= 0.15;
             }
             // Drive the robot using the updated values
             robot.driveRobot(drive, turn, strafe);

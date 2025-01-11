@@ -20,7 +20,8 @@ public class AutoTest extends LinearOpMode {
         telemetry.update();
 
         // Autonomous drive
-        robot.AutoDrive(60, 0);
+        //robot.AutoStrafe(-37, 0);
+        robot.AutoDrive(60, 180);
 
         // Add telemetry to show final heading after drive
         telemetry.addData("Final Heading", robot.getHeading());

@@ -10,9 +10,14 @@ public class Auto extends LinearOpMode {
     @Override
     public void runOpMode(){
         // Initialize all the hardware, using the hardware class.
+
         robot.init();
         waitForStart();
-        robot.AutoStrafe(24,0);
+        //robot.AutoDrive(-1.5,0);
+
+        robot.AutoStrafe(37,180);
+
+
 
     }
 }
