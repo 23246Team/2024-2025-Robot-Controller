@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="TeleOp", group="Robot")
+@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="Measurements", group="Robot")
 public class Measurements extends LinearOpMode {
 
     // Create a RobotHardware object to be used to access robot hardware.
@@ -24,6 +24,15 @@ public class Measurements extends LinearOpMode {
         while (opModeIsActive()) {
             telemetry.addData("Strafe Encoder", robot.getStrafeEncoder());
             telemetry.addData("Drive Encoder", robot.getDriveEncoder());
+            telemetry.addData("Left Slider Encoder", robot.getLeftSliderEncoder());
+            telemetry.addData("Right Slider Encoder", robot.getRightSliderEncoder());
+            if (gamepad2.right_trigger!= 0){
+                robot.setSliderPower(gamepad2.right_trigger);
+            } else if (gamepad2.left_trigger != 0){
+                robot.setSliderPower(-gamepad2.left_trigger);
+            } else {
+                robot.setSliderPower(0);
+            }
             telemetry.update();
         }
         }

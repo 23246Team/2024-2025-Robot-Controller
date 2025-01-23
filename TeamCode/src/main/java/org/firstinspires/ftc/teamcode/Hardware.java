@@ -269,4 +269,12 @@ public class Hardware {
         // Multiply the error by the gain to determine the required steering correction/  Limit the result to +/- 1.0
         return Range.clip(headingError * proportionalGain, -1, 1); // Return the steering correction
     }
+
+
+    public Float getLeftSliderEncoder() {
+        return (float) leftSlider.getCurrentPosition();
+    }
+    public Float getRightSliderEncoder() {
+        return (float) rightSlider.getCurrentPosition();
+    }
 }

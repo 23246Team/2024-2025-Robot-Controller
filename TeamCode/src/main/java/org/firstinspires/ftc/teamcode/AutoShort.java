@@ -1,10 +1,9 @@
 package org.firstinspires.ftc.teamcode;
-import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-@Autonomous(name="Auto", group="Robot")
-public class Auto extends LinearOpMode {
+@Autonomous(name="AutoShort", group="Robot")
+public class AutoShort extends LinearOpMode {
     Hardware robot = new Hardware(this);
 
     @Override
