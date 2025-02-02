@@ -204,8 +204,16 @@ public class Hardware {
         return (driveEncoder.getCurrentPosition()/TICKS_PER_INCH);
     }
     public void AutoDrive(double drive, double heading) {
+        AutoDrive(drive, heading, 1);
+    }
+    public void AutoDrive(double drive, double heading, double maxSpeed) {
+
+        driveEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        strafeEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        strafeEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        driveEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         double rampUp = Math.abs(drive) * 0.6;
-        double speed = 0.3; // Initial speed
+        double speed = maxSpeed; // Initial speed
         double speedIncrement = 0.05; // Speed increment
         double direction = Math.signum(drive); // Determine the direction (1 for forward, -1 for backward)
 
@@ -218,14 +226,21 @@ public class Hardware {
         while (Math.abs(getDriveEncoder()) < Math.abs(drive) && myOpMode.opModeIsActive()) {
             double error = getSteeringCorrection(heading, P_DRIVE_GAIN);
             double remainingDistance = Math.abs(drive) - Math.abs(getDriveEncoder());
-            double decelerationSpeed = Range.clip(remainingDistance / Math.abs(drive) * 0.2, 0.2, 0.7); // Decrease speed as it approaches the target
+            double decelerationSpeed = Range.clip(remainingDistance / Math.abs(drive) * 0.2, 0.2, maxSpeed); // Decrease speed as it approaches the target
             driveRobot(decelerationSpeed * direction, error, 0);
         }
 
         driveRobot(0, 0, 0); // Stop the robot after driving
 }
 
-    public void AutoStrafe(double strafe, double heading) {
+    public void AutoStrafe(double drive, double heading) {
+        AutoStrafe(drive, heading, 0.5, 0.3);
+    }
+    public void AutoStrafe(double strafe, double heading, double maxSpeed, double minSpeed) {
+        driveEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        strafeEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        strafeEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        driveEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         double rampUp = Math.abs(strafe) * 0.6;
         double speed = 0.3; // Initial speed
         double speedIncrement = 0.05; // Speed increment
@@ -233,23 +248,33 @@ public class Hardware {
 
         while (Math.abs(getStrafeEncoder()) < Math.abs(rampUp) && myOpMode.opModeIsActive()) {
             double error = getSteeringCorrection(heading, P_DRIVE_GAIN);
-            speed = Math.min(0.5, speed + speedIncrement);
+            speed = Math.min(maxSpeed, speed + speedIncrement);
             driveRobot(0, error, speed * direction);
         }
 
         while (Math.abs(getStrafeEncoder()) < Math.abs(strafe) && myOpMode.opModeIsActive()) {
             double error = getSteeringCorrection(heading, P_DRIVE_GAIN);
             double remainingDistance = Math.abs(strafe) - Math.abs(getStrafeEncoder());
-            double decelerationSpeed = Range.clip(remainingDistance / Math.abs(strafe) * 0.2, 0.4, 0.7); // Decrease speed as it approaches the target
+            double decelerationSpeed = Range.clip(remainingDistance / Math.abs(strafe) * 0.2, minSpeed, maxSpeed); // Decrease speed as it approaches the target
             driveRobot(0, error, decelerationSpeed * direction);
         }
 
         driveRobot(0, 0, 0); // Stop the robot after strafing
     }
 
-    public void AutoTurn(double turn) {
-        // Implement the turn logic here
+    public void AutoTurn(double targetHeading) {
+        double error;
+        double turnSpeed;
+        double currentHeading = getHeading();
 
+        while (Math.abs(currentHeading - targetHeading) > 1 && myOpMode.opModeIsActive()) {
+            error = getSteeringCorrection(targetHeading, P_DRIVE_GAIN);
+            turnSpeed = Range.clip(error, -0.5, 0.5); // Limit the turn speed
+            driveRobot(0, turnSpeed, 0);
+            currentHeading = getHeading();
+        }
+
+        driveRobot(0, 0, 0); // Stop the robot after turning
     }
     public double getHeading() {
         YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
@@ -278,3 +303,4 @@ public class Hardware {
         return (float) rightSlider.getCurrentPosition();
     }
 }
+
